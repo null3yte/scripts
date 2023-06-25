@@ -13,28 +13,25 @@ DOMAINS_FILE="$1/domains"
 DOMAIN_INVENTORY_FILE="$1/.domain_inventory"
 
 # Loop over each line in the scope file
-while read line; do
-    # Check if the line matches the pattern subdomain.domain.tld
-    if [[ "$line" =~ ^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$ ]]; then
-        # Output the line to the domains file
-        echo "$line" >> "$DOMAINS_FILE"
-    # Check if the line matches the pattern *.domain.tld
-    elif [[ "$line" =~ ^\*\.([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+$ ]]; then
-        # Extract the domain name
-        domain=$(echo "$line" | sed 's/^\*\.//')
+awk '
+/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/ {
+    # Output the line to the domains file
+    print >> "'"$DOMAINS_FILE"'" 
+}
+/^\*\.([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+$/ {
+    # Extract the domain name
+    domain = substr($0, 3)
 
-        # Output the domain name to the domains and domain inventory files
-        echo "$domain" >> "$DOMAINS_FILE"
-        echo "$domain" >> "$DOMAIN_INVENTORY_FILE"
-    fi
-done < "$INPUT_FILE"
+    # Output the domain name to the domains and domain inventory files
+    print domain >> "'"$DOMAINS_FILE"'" 
+    print domain >> "'"$DOMAIN_INVENTORY_FILE"'" 
+}
+' "$INPUT_FILE"
 
 # Remove duplicates from the domains and domain inventory files
 sort -u -o "$DOMAINS_FILE" "$DOMAINS_FILE"
 sort -u -o "$DOMAIN_INVENTORY_FILE" "$DOMAIN_INVENTORY_FILE"
 
 # Remove lines from the output file that also exist in the out of scope file
-grep -vFf "$OUTPUT_FILE" "$DOMAINS_FILE" > "$DOMAINS_FILE.tmp"
-mv "$DOMAINS_FILE.tmp" "$DOMAINS_FILE"
-grep -vFf "$OUTPUT_FILE" "$DOMAIN_INVENTORY_FILE" > "$DOMAIN_INVENTORY_FILE.tmp"
-mv "$DOMAIN_INVENTORY_FILE.tmp" "$DOMAIN_INVENTORY_FILE"
+awk 'NR==FNR{a[$0];next} !($0 in a)' "$OUTPUT_FILE" "$DOMAINS_FILE" > "$DOMAINS_FILE.tmp" && mv "$DOMAINS_FILE.tmp" "$DOMAINS_FILE"
+awk 'NR==FNR{a[$0];next} !($0 in a)' "$OUTPUT_FILE" "$DOMAIN_INVENTORY_FILE" > "$DOMAIN_INVENTORY_FILE.tmp" && mv "$DOMAIN_INVENTORY_FILE.tmp" "$DOMAIN_INVENTORY_FILE"
