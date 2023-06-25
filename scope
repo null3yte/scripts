@@ -16,15 +16,23 @@ DOMAIN_INVENTORY_FILE="$1/.domain_inventory"
 awk '
 /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/ {
     # Output the line to the domains file
-    print >> "'"$DOMAINS_FILE"'" 
+    domains[$0]++
 }
 /^\*\.([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+$/ {
     # Extract the domain name
     domain = substr($0, 3)
 
     # Output the domain name to the domains and domain inventory files
-    print domain >> "'"$DOMAINS_FILE"'" 
-    print domain >> "'"$DOMAIN_INVENTORY_FILE"'" 
+    domains[domain]++
+    domain_inventory[domain]++
+}
+END {
+    for (domain in domains) {
+        print domain >> "'"$DOMAINS_FILE"'" 
+    }
+    for (domain in domain_inventory) {
+        print domain >> "'"$DOMAIN_INVENTORY_FILE"'" 
+    }
 }
 ' "$INPUT_FILE"
 
