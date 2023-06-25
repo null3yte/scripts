@@ -1,3 +1,2 @@
 #!/bin/bash
-host=$(echo $1 | unfurl format %d)
-gospider --site $1 -a -r -d 6 -u "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36" -q --robots --sitemap --js -R -w | grep $host | sort -u
+gospider --site $1 -a -r -d 6 -u "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36" -q --robots --sitemap --js -R -w | sort -u
