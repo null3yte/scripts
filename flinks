@@ -1,0 +1,4 @@
+#!/bin/bash
+(gospider=$(gospider --site $1 -a -r -d $2 -u "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36" -q --robots --sitemap --js -R | grep -Eo '(http|https)://[^"]*' | sed 's/\s.*//') && \
+katana=$(katana -u $1 -jc -d $2 -aff -silent -kf all) && \
+echo "$gospider$katana" | cat -s | sort -u)
